@@ -67,4 +67,5 @@ def extract_threads_post_by_class(profile_url, max_posts=20):
 
 
 # Example post URL
-extract_threads_post_by_class("https://www.threads.com/search?q=disaster&serp_type=default")
+if __name__ == "__main__":
+    extract_threads_post_by_class("https://www.threads.com/search?q=disaster&serp_type=default")

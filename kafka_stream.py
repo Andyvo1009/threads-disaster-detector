@@ -80,7 +80,7 @@ def kafka_streaming():
                 # print(f"✅ Sent {row_count}: {text_preview}")
                 
                 # Small delay to simulate streaming
-                time.sleep(5)
+                time.sleep(1)
                 
             except Exception as e:
                 print(f"❌ Error sending row {row_count}: {e}")

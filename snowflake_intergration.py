@@ -96,3 +96,5 @@ def snowflake_integration():
 
     print("✅Batch write to Snowflake completed successfully!")
     spark.stop()
+if __name__ == "__main__":
+    snowflake_integration()

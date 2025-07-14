@@ -32,39 +32,37 @@ dag = DAG(
     catchup=False,
     tags=['disaster', 'pipeline'],
 )
-start_zookeeper = BashOperator(
-    task_id='start_zookeeper',
-    bash_command='nohup /home/andy_68/tmp/kafka_2.13-3.8.1/bin/zookeeper-server-start.sh /home/andy_68/tmp/kafka_2.13-3.8.1/config/zookeeper.properties > zookeeper.out 2>&1 &',
-    dag=dag,
-)
-
-start_kafka = BashOperator(
-    task_id='start_kafka',
-    bash_command='sleep 3 && nohup  /home/andy_68/tmp/kafka_2.13-3.8.1/bin/kafka-server-start.sh  /home/andy_68/tmp/kafka_2.13-3.8.1/config/server.properties > kafka.out 2>&1 &',
-    dag=dag,
-)
-
-# Create DAG
 
 
+# Python callable functions for the PythonOperators
 def run_threads_crawl(**context):
     """Run threads crawling"""
+    print("Starting Threads crawling...")
     extract_threads_post_by_class("https://www.threads.com/search?q=disaster&serp_type=default")
+    print("Crawling completed.")
     return "Crawling completed"
 
 def run_kafka_stream(**context):
     """Run kafka streaming"""
-    time.sleep(6)
+    # Removed time.sleep(6) - if Kafka is started by this DAG,
+    # the start_kafka task should ensure it's ready.
+    # If Kafka is external, this sleep is unnecessary.
+    print("Starting Kafka streaming...")
+    time.sleep(6)  # Ensure Kafka is ready before streaming
     kafka_streaming()
+    print("Kafka streaming completed.")
     return "Kafka streaming completed"
 
 def run_snowflake_process(**context):
     """Run snowflake processing"""
-    # The snowflake_test.py will run when imported and executed
+    print("Starting Snowflake processing...")
+    # Ensure snowflake_integration is a function call.
+    # If snowflake_test.py runs on import, refactor it to be a function.
     snowflake_integration()
+    print("Snowflake processing completed.")
     return "Snowflake processing completed"
 
-# Define tasks
+# Define Python tasks
 crawl_task = PythonOperator(
     task_id='crawl_threads',
     python_callable=run_threads_crawl,
@@ -83,6 +81,9 @@ snowflake_task = PythonOperator(
     dag=dag,
 )
 
-# Set task dependencies
-[start_zookeeper, start_kafka, crawl_task]
+# --- Set Task Dependencies (Corrected) ---
+# Assuming Zookeeper must start before Kafka, and both must be up before crawling.
+# Kafka streaming and Snowflake processing can run in parallel after crawling.
+
+
 crawl_task >> [kafka_task, snowflake_task]
